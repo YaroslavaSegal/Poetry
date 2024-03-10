@@ -110,7 +110,7 @@ class Birthday(Field):
         if value is None:
             return True
         try:
-            datetime.strptime(value, '%d-%m-%Y')
+            datetime.strptime(value, "%d-%m-%Y")
             return True
         except ValueError:
             return False
@@ -121,10 +121,14 @@ class Birthday(Field):
 
     @value.setter
     def value(self, value):
-        self.__value = datetime.strptime(value, '%d-%m-%Y').date() if (self.is_valid(value) and value is not None) else None
+        self.__value = (
+            datetime.strptime(value, "%d-%m-%Y").date()
+            if (self.is_valid(value) and value is not None)
+            else None
+        )
         if not self.is_valid(value):
             raise ValueError
-        
+
 
 class Email(Field):
     def __init__(self, value):
@@ -134,7 +138,10 @@ class Email(Field):
 
     @staticmethod
     def is_valid(value):
-        if value is None or re.match(r"\b[A-Za-z]{1,}[A-Za-z0-9._]{1,}@[A-Za-z0-9]+\.[A-Za-z]{2,}\b|[A-Za-z]{1,}[A-Za-z0-9._]{1,}@[A-Za-z0-9]+\.[A-Za-z]{2,}\b", value):
+        if value is None or re.match(
+            r"\b[A-Za-z]{1,}[A-Za-z0-9._]{1,}@[A-Za-z0-9]+\.[A-Za-z]{2,}\b|[A-Za-z]{1,}[A-Za-z0-9._]{1,}@[A-Za-z0-9]+\.[A-Za-z]{2,}\b",
+            value,
+        ):
             return True
 
     @property
@@ -146,7 +153,7 @@ class Email(Field):
         self.__value = value if (self.is_valid(value) and value is not None) else None
         if not self.is_valid(value):
             raise ValueError
-        
+
 
 class Record:
     def __init__(self, name, birthday=None, address=None, email=None, secondname=None):
@@ -179,8 +186,6 @@ class Record:
         else:
             raise ValueError
 
-
-
     def add_phone(self, number):
         for phone in self.phones:
             if phone.value == number:
@@ -208,7 +213,7 @@ class Record:
             if phone.value == number:
                 return phone
         return None
-    
+
     def add_email(self, email):
         self.email = Email(email)
         return self.email
@@ -234,11 +239,11 @@ class Record:
     def edit_address(self, new_address):
         self.address = Address(new_address)
         return self.address
-    
+
     def remove_address(self):
         self.address = Address(None)
         return self.address
-    
+
     def find_address(self, address):
         if self.address == address:
             return self.name.value
@@ -256,10 +261,11 @@ class Record:
         self.secondname = SecondName(new_secondname)
         return self.secondname
 
-
     def __str__(self):
-        return (f"Contact name: {self.name.value}, second name: {self.secondname.value}, phones: {'; '.join(p.value for p in self.phones)},"
-                f" birthday: {self.birthday.value}, email: {self.email.value}, address: {self.address.value}")
+        return (
+            f"Contact name: {self.name.value}, second name: {self.secondname.value}, phones: {'; '.join(p.value for p in self.phones)},"
+            f" birthday: {self.birthday.value}, email: {self.email.value}, address: {self.address.value}"
+        )
 
 
 class AddressBook(UserDict):
@@ -277,22 +283,24 @@ class AddressBook(UserDict):
                 birthday_people.append(record.name.value)
         return birthday_people
 
-
     def find_info(self, info: str):
         # find users whose name or phone number matches the entered info
         request = []
         if info.isalpha():  # if only letters in info, find usernames
             for key, value in self.data.items():
                 if info in key:
-                    request.append(f"Contact name: {value.name}, phones: {'; '.join(p.value for p in value.phones)},"
-                                   f" birthday: {value.birthday.value}")
+                    request.append(
+                        f"Contact name: {value.name}, phones: {'; '.join(p.value for p in value.phones)},"
+                        f" birthday: {value.birthday.value}"
+                    )
         elif info.isdigit():  # if only digits in info, find in phone numbers
             for key, value in self.data.items():
                 for phone in value.phones:
                     if info in phone.value and key not in request:
                         request.append(
                             f"Contact name: {value.name}, phones: {'; '.join(p.value for p in value.phones)},"
-                            f" birthday: {value.birthday.value}")
+                            f" birthday: {value.birthday.value}"
+                        )
         return request
 
     def find(self, username):
@@ -309,41 +317,17 @@ class AddressBook(UserDict):
         page = []
 
         for value in self.data.values():
-            page.append(f'{value}')
+            page.append(f"{value}")
             if len(page) == n:
                 yield page
                 page = []
         yield page
 
     def save_to_file(self, filename):
-        with open(filename, 'wb') as fh:
+        with open(filename, "wb") as fh:
             pickle.dump(self, fh)
 
     def read_from_file(self, filename):
-        with open(filename, 'rb') as fh:
+        with open(filename, "rb") as fh:
             return pickle.load(fh)
 
-# book =AddressBook()
-a = Record('a', '20-02-1989')
-print(a.name)
-print(a.birthday)
-# # b = Record('b', '20-02-1987')
-# # c = Record('c', '13-05-1989')
-# a.add_email('ant@example.com')
-# a.add_address('Kyiv, Centre')
-# book.add_contact(a)
-# print(book.find('a'))
-#
-# a.edit_email('ant@example.com', 'ant@google.com')
-# a.add_address('Kyiv, Borschaga')
-# print(book.find('a'))
-# print()
-
-
-
-
-
-# book.add_contact(b)
-# book.add_contact(c)
-#
-# print(book.birthday_in(2))
